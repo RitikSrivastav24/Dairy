@@ -1,5 +1,6 @@
 import db from "../config/db.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
   try {
@@ -45,6 +46,83 @@ export const signup = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+
+    return res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};
+
+export const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // CHECK FIELDS
+    if (!username || !password) {
+      return res.status(400).json({
+        message: "All Fields are Required!!",
+      });
+    }
+
+    const query = "SELECT * FROM db_login WHERE username=?";
+
+    db.query(query, [username], async (err, result) => {
+
+      // DATABASE ERROR
+      if (err) {
+        return res.status(500).json({
+          message: "Database Error!!",
+        });
+      }
+
+      // USER NOT FOUND
+      if (result.length === 0) {
+        return res.status(400).json({
+          message: "User not Found",
+        });
+      }
+
+      const user = result[0];
+
+      // PASSWORD CHECK
+      const isMatch = await bcrypt.compare(
+        password,
+        user.password
+      );
+
+      if (!isMatch) {
+        return res.status(400).json({
+          message: "Invalid Password",
+        });
+      }
+
+      // JWT TOKEN
+      const token = jwt.sign(
+        {
+          id: user.id,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      // COOKIE
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json({
+        message: "Login Successful",
+      });
+
+    });
+
+  } catch (error) {
+    console.log(error);
 
     return res.status(500).json({
       message: "Server Error",
