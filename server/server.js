@@ -3,6 +3,8 @@ import cors from  "cors";
 import router from "./routes/authRoute.js";
 import cookieParser from "cookie-parser";
 import dotenv from 'dotenv'
+import notesRouter from "./routes/entryRoutes.js";
+import getNotesRouter from "./routes/notesRoute.js";
 const app = express();
 
 dotenv.config()
@@ -15,6 +17,8 @@ app.use(cookieParser())
 
 
 app.use("/api/auth", router)
+app.use("/api/notes", notesRouter)
+app.use("/api/notes", getNotesRouter)
 app.get("/", (req, res) =>{
     res.send("API running...")
 })
