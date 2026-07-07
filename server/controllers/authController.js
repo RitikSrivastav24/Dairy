@@ -55,18 +55,18 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     // CHECK FIELDS
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         message: "All Fields are Required!!",
       });
     }
 
-    const query = "SELECT * FROM db_login WHERE username=?";
+    const query = "SELECT * FROM db_login WHERE email=?";
 
-    db.query(query, [username], async (err, result) => {
+    db.query(query, [email], async (err, result) => {
 
       // DATABASE ERROR
       if (err) {
